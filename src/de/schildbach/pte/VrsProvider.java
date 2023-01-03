@@ -431,7 +431,7 @@ public class VrsProvider extends AbstractNetworkProvider {
             final JSONObject head = new JSONObject(page.toString());
             final String error = Strings.emptyToNull(head.optString("error", "").trim());
             if (error != null) {
-                if (error.equals("ASS2-Server lieferte leere Antwort."))
+                if (error.contains("lieferte leere Antwort."))
                     return new QueryDeparturesResult(new ResultHeader(NetworkId.VRS, SERVER_PRODUCT),
                             QueryDeparturesResult.Status.SERVICE_DOWN);
                 else if (error.equals("Leere ASS-ID und leere Koordinate"))
@@ -533,7 +533,7 @@ public class VrsProvider extends AbstractNetworkProvider {
             final JSONObject head = new JSONObject(page.toString());
             final String error = Strings.emptyToNull(head.optString("error", "").trim());
             if (error != null) {
-                if (error.equals("ASS2-Server lieferte leere Antwort."))
+                if (error.contains("lieferte leere Antwort."))
                     return new SuggestLocationsResult(new ResultHeader(NetworkId.VRS, SERVER_PRODUCT),
                             SuggestLocationsResult.Status.SERVICE_DOWN);
                 else if (error.equals("Leere Suche"))
@@ -645,10 +645,10 @@ public class VrsProvider extends AbstractNetworkProvider {
             final JSONObject head = new JSONObject(page.toString());
             final String error = Strings.emptyToNull(head.optString("error", "").trim());
             if (error != null) {
-                if (error.equals("ASS2-Server lieferte leere Antwort."))
+                if (error.contains("lieferte leere Antwort."))
                     return new QueryTripsResult(new ResultHeader(NetworkId.VRS, SERVER_PRODUCT),
                             QueryTripsResult.Status.SERVICE_DOWN);
-                else if (error.equals("Zeitüberschreitung bei der Verbindung zum ASS2-Server"))
+                else if (error.contains("Zeitüberschreitung bei der Verbindung zum"))
                     return new QueryTripsResult(new ResultHeader(NetworkId.VRS, SERVER_PRODUCT),
                             QueryTripsResult.Status.SERVICE_DOWN);
                 else if (error.equals("Server Error"))
