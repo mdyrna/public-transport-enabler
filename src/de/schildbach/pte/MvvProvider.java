@@ -17,14 +17,13 @@
 
 package de.schildbach.pte;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
-
-import com.google.common.base.Charsets;
 
 import de.schildbach.pte.dto.Line;
 import de.schildbach.pte.dto.Point;
@@ -39,7 +38,7 @@ import okhttp3.HttpUrl;
  * @author Andreas Schildbach
  */
 public class MvvProvider extends AbstractEfaProvider {
-    private static final HttpUrl API_BASE = HttpUrl.parse("https://efa.mvv-muenchen.de/mobile/");
+    private static final HttpUrl API_BASE = HttpUrl.parse("https://efa.mvv-muenchen.de/ng/");
 
     public MvvProvider() {
         this(API_BASE);
@@ -48,9 +47,9 @@ public class MvvProvider extends AbstractEfaProvider {
     public MvvProvider(final HttpUrl apiBase) {
         super(NetworkId.MVV, apiBase);
         setIncludeRegionId(false);
-        setRequestUrlEncoding(Charsets.UTF_8);
+        setRequestUrlEncoding(StandardCharsets.UTF_8);
         setStyles(STYLES);
-        setSessionCookieName("SIDefaalt"); // SIDefa
+        setSessionCookieName("SIDefa");
     }
 
     @Override
@@ -107,6 +106,7 @@ public class MvvProvider extends AbstractEfaProvider {
         STYLES.put("SS2", new Style(Shape.CIRCLE, Style.parseColor("#76b82a"), Style.WHITE));
         STYLES.put("SS3", new Style(Shape.CIRCLE, Style.parseColor("#951b81"), Style.WHITE));
         STYLES.put("SS4", new Style(Shape.CIRCLE, Style.parseColor("#e30613"), Style.WHITE));
+        STYLES.put("SS5", new Style(Shape.CIRCLE, Style.parseColor("#00527f"), Style.WHITE));
         STYLES.put("SS6", new Style(Shape.CIRCLE, Style.parseColor("#00975f"), Style.WHITE));
         STYLES.put("SS7", new Style(Shape.CIRCLE, Style.parseColor("#943126"), Style.WHITE));
         STYLES.put("SS8", new Style(Shape.CIRCLE, Style.BLACK, Style.parseColor("#ffcc00")));

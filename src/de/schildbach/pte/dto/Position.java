@@ -17,14 +17,13 @@
 
 package de.schildbach.pte.dto;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static de.schildbach.pte.util.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
-
-import com.google.common.base.Objects;
 
 /**
  * @author Andreas Schildbach
@@ -40,10 +39,11 @@ public final class Position implements Serializable {
     }
 
     public Position(final String name, final String section) {
-        this.name = checkNotNull(name);
+        this.name = requireNonNull(name);
         // checkArgument(name.length() <= 5, "name too long: %s", name);
         this.section = section;
-        checkArgument(section == null || section.length() <= 3, "section too long: %s", section);
+        checkArgument(section == null || section.length() <= 3, () ->
+                "section too long: " + section);
     }
 
     @Override
@@ -53,16 +53,16 @@ public final class Position implements Serializable {
         if (!(o instanceof Position))
             return false;
         final Position other = (Position) o;
-        if (!Objects.equal(this.name, other.name))
+        if (!Objects.equals(this.name, other.name))
             return false;
-        if (!Objects.equal(this.section, other.section))
+        if (!Objects.equals(this.section, other.section))
             return false;
         return true;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(name, section);
+        return Objects.hash(name, section);
     }
 
     @Override

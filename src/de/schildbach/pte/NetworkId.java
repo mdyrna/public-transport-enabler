@@ -25,25 +25,13 @@ public enum NetworkId {
     RT,
 
     // Germany
-    DB, BVG, VBB, NVV, BAYERN, MVV, INVG, AVV, AVV_AUGSBURG, VGN, VVM, VMV, SH, GVH, BSVAG, VBN, NASA, VMT, VVO, VMS, VGS, VRR, VRS, AVV_AACHEN, MVG, VRN, VVS, DING, KVV, NVBW, VVV,
+    DB, BVG, VBB, NVV, RMV, BAYERN, MVV, INVG, AVV_AUGSBURG, VGN, VVM, VMV, SH, GVH, BSVAG, VBN, NASA, VMT, VVO, VGS, VRR, VRS, AVV_AACHEN, MVG, VRN, VVS, DING, KVV, NVBW, VVV,
 
     // Austria
     OEBB, VAO, VOR, WIEN, OOEVV, LINZ, SVV, VVT, STV, VMOBIL,
 
-    // Czech Republic
-    CZECH_REPUBLIC,
-
     // Switzerland
     VBL, ZVV,
-
-    // France
-    PARIS, FRANCESOUTHWEST, FRANCESOUTHEAST, FRANCENORTHWEST, FRANCENORTHEAST,
-
-    // Spain
-    SPAIN,
-
-    // Belgium
-    SNCB,
 
     // Netherlands
     NS, NEGENTWEE,
@@ -54,45 +42,21 @@ public enum NetworkId {
     // Sweden
     SE,
 
-    // Finland
-    FINLAND,
-
     // Luxembourg
     LU,
 
     // United Kingdom
     TLEM, MERSEY,
 
-    // Ireland
-    TFI, EIREANN,
-
     // Poland
-    PLNAVITIA,
-
-    // Italy
-    IT,
+    PL,
 
     // United Arab Emirates
     DUB,
 
     // United States
-    BART, RTACHICAGO, OREGON, MASSACHUSETTS, CMTA,
-
-    // Canada
-    ONTARIO, QUEBEC, BRITISHCOLUMBIA,
+    BART,
 
     // Australia
-    SYDNEY, AUSTRALIA,
-
-    // New Zealand
-    NZ,
-
-    // Africa
-    GHANA,
-
-    // Nicaragua
-    NICARAGUA,
-
-    // Brazil
-    BRAZIL,
+    SYDNEY,
 }

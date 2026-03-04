@@ -17,8 +17,8 @@
 
 package de.schildbach.pte.dto;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static de.schildbach.pte.util.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -30,13 +30,10 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
-import com.google.common.base.Objects;
 
 /**
  * @author Andreas Schildbach
@@ -55,9 +52,9 @@ public final class Trip implements Serializable {
     public Trip(final String id, final Location from, final Location to, final List<Leg> legs, final List<Fare> fares,
             final int[] capacity, final Integer numChanges) {
         this.id = id;
-        this.from = checkNotNull(from);
-        this.to = checkNotNull(to);
-        this.legs = checkNotNull(legs);
+        this.from = requireNonNull(from);
+        this.to = requireNonNull(to);
+        this.legs = requireNonNull(legs);
         this.fares = fares;
         this.capacity = capacity;
         this.numChanges = numChanges;
@@ -287,25 +284,25 @@ public final class Trip implements Serializable {
         if (!(o instanceof Trip))
             return false;
         final Trip other = (Trip) o;
-        return Objects.equal(this.getId(), other.getId());
+        return Objects.equals(this.getId(), other.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(getId());
+        return Objects.hash(getId());
     }
 
     @Override
     public String toString() {
-        final ToStringHelper helper = MoreObjects.toStringHelper(this).addValue(getId());
         final Date firstPublicLegDepartureTime = getFirstPublicLegDepartureTime();
         final Date lastPublicLegArrivalTime = getLastPublicLegArrivalTime();
-        helper.addValue(
-                firstPublicLegDepartureTime != null ? String.format(Locale.US, "%ta %<tR", firstPublicLegDepartureTime)
-                        : "null" + '-' + lastPublicLegArrivalTime != null
-                                ? String.format(Locale.US, "%ta %<tR", lastPublicLegArrivalTime) : "null");
-        helper.add("numChanges", numChanges);
-        return helper.toString();
+        return getClass().getSimpleName() + "{" +
+                getId() + "," +
+                (firstPublicLegDepartureTime != null ?
+                        "first=" + String.format(Locale.US, "%ta %<tR", firstPublicLegDepartureTime) + "," : "") +
+                (lastPublicLegArrivalTime != null ?
+                        "last=" + String.format(Locale.US, "%ta %<tR", lastPublicLegArrivalTime) + "," : "") +
+                "numChanges=" + numChanges + "}";
     }
 
     public abstract static class Leg implements Serializable {
@@ -316,8 +313,8 @@ public final class Trip implements Serializable {
         public transient List<Point> path; // custom serialization, to save space
 
         public Leg(final Location departure, final Location arrival, final List<Point> path) {
-            this.departure = checkNotNull(departure);
-            this.arrival = checkNotNull(arrival);
+            this.departure = requireNonNull(departure);
+            this.arrival = requireNonNull(arrival);
             this.path = path;
         }
 
@@ -377,15 +374,15 @@ public final class Trip implements Serializable {
                 final List<Stop> intermediateStops, final List<Point> path, final String message) {
             super(departureStop.location, arrivalStop.location, path);
 
-            this.line = checkNotNull(line);
+            this.line = requireNonNull(line);
             this.destination = destination;
-            this.departureStop = checkNotNull(departureStop);
-            this.arrivalStop = checkNotNull(arrivalStop);
+            this.departureStop = requireNonNull(departureStop);
+            this.arrivalStop = requireNonNull(arrivalStop);
             this.intermediateStops = intermediateStops;
             this.message = message;
 
-            checkNotNull(departureStop.getDepartureTime());
-            checkNotNull(arrivalStop.getArrivalTime());
+            requireNonNull(departureStop.getDepartureTime());
+            requireNonNull(arrivalStop.getArrivalTime());
         }
 
         @Override
@@ -450,8 +447,11 @@ public final class Trip implements Serializable {
 
         @Override
         public String toString() {
-            return MoreObjects.toStringHelper(this).add("line", line).add("destination", destination)
-                    .add("departureStop", departureStop).add("arrivalStop", arrivalStop).omitNullValues().toString();
+            return getClass().getSimpleName() + "{" +
+                    "line=" + line + "," +
+                    (destination != null ? "destination=" + destination + "," : "") +
+                    "departureStop=" + departureStop + "," +
+                    "arrivalStop=" + arrivalStop + "}";
         }
     }
 
@@ -472,9 +472,9 @@ public final class Trip implements Serializable {
                 final Date arrivalTime, final List<Point> path, final int distance) {
             super(departure, arrival, path);
 
-            this.type = checkNotNull(type);
-            this.departureTime = checkNotNull(departureTime);
-            this.arrivalTime = checkNotNull(arrivalTime);
+            this.type = requireNonNull(type);
+            this.departureTime = requireNonNull(departureTime);
+            this.arrivalTime = requireNonNull(arrivalTime);
             this.min = (int) ((arrivalTime.getTime() - departureTime.getTime()) / 1000 / 60);
             this.distance = distance;
         }
@@ -508,8 +508,12 @@ public final class Trip implements Serializable {
 
         @Override
         public String toString() {
-            return MoreObjects.toStringHelper(this).addValue(type).add("departure", departure).add("arrival", arrival)
-                    .add("min", min).add("distance", distance).omitNullValues().toString();
+            return getClass().getSimpleName() + "{" +
+                    type + "," +
+                    "departure=" + departure + "," +
+                    "arrival=" + arrival + "," +
+                    "min=" + min + "," +
+                    "distance=" + distance + "}";
         }
     }
 }

@@ -17,6 +17,7 @@
 
 package de.schildbach.pte;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ import okhttp3.HttpUrl;
  * @author Andreas Schildbach
  */
 public class GvhProvider extends AbstractEfaProvider {
-    private static final HttpUrl API_BASE = HttpUrl.parse("https://app.efa.de/mdv_server/app_gvh/");
+    private static final HttpUrl API_BASE = HttpUrl.parse("https://app.efa.de/efa/");
 
     public GvhProvider() {
         this(API_BASE);
@@ -40,7 +41,7 @@ public class GvhProvider extends AbstractEfaProvider {
 
     public GvhProvider(final HttpUrl apiBase) {
         super(NetworkId.GVH, apiBase);
-
+        setRequestUrlEncoding(StandardCharsets.UTF_8);
         setIncludeRegionId(false);
         setStyles(STYLES);
         setSessionCookieName("HASESSIONID");
@@ -55,6 +56,8 @@ public class GvhProvider extends AbstractEfaProvider {
                 return new Line(id, network, Product.REGIONAL_TRAIN, "RX" + trainNum);
             if ("S4".equals(trainNum))
                 return new Line(id, network, Product.SUBURBAN_TRAIN, "S4");
+            if ("RS3".equals(trainNum)) // Regio S-Bahn
+                return new Line(id, network, Product.SUBURBAN_TRAIN, "RS3");
             if (longName != null && longName.startsWith("Bus ") && name != null)
                 return new Line(id, network, Product.BUS, name);
         }

@@ -4,6 +4,8 @@ Public Transport Enabler
 This is a Java library allowing you to get data from public transport providers.
 Look into [NetworkProvider.java](https://github.com/schildbach/public-transport-enabler/blob/master/src/de/schildbach/pte/NetworkProvider.java) for an overview of the API.
 
+The library uses Java 8 language and requires Java 8 API or Android 7 API (level 24).
+
 Using providers that require secrets
 ------------------------------------
 
@@ -12,7 +14,7 @@ Copy the `secrets.properties.template` file to `secrets.properties` like so:
 
     $ cp test/de/schildbach/pte/live/secrets.properties.template test/de/schildbach/pte/live/secrets.properties
 
-You need to request the secrets directly from the provider. For Navitia based providers, you can [request a secret here](https://www.navitia.io/register).
+You need to request the secrets directly from the provider.
 
 How to run live tests?
 ----------------------
@@ -25,7 +27,7 @@ If you prefer to run tests from the command line, you can comment out the test e
 [build.gradle](https://github.com/schildbach/public-transport-enabler/blob/master/build.gradle#L30)
 and use this command to only execute a test for a single provider:
 
-    $ gradle -Dtest.single=ParisProviderLive test
+    $ gradle -Dtest.single=BvgProviderLive test
 
-This uses the `ParisProvider` as an example.
+This uses the `BvgProvider` as an example.
 Just replace it with the provider you want to test.

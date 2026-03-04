@@ -17,40 +17,50 @@
 
 package de.schildbach.pte;
 
-import java.util.regex.Matcher;
-
 import de.schildbach.pte.dto.Product;
-
 import okhttp3.HttpUrl;
 
-/**
- * Provider implementation for Saarfahrplan (Saarland, Germany).
- * 
- * @author Andreas Schildbach
- */
-public class VgsProvider extends AbstractHafasClientInterfaceProvider {
-    private static final HttpUrl API_BASE = HttpUrl.parse("https://saarfahrplan.de/bin/");
-    private static final Product[] PRODUCTS_MAP = { Product.HIGH_SPEED_TRAIN, Product.HIGH_SPEED_TRAIN,
-            Product.HIGH_SPEED_TRAIN, Product.REGIONAL_TRAIN, Product.SUBURBAN_TRAIN, Product.SUBWAY, Product.TRAM,
-            Product.BUS, Product.CABLECAR, Product.ON_DEMAND, Product.BUS };
-    private static final String DEFAULT_API_CLIENT = "{\"id\":\"ZPS-SAAR\",\"type\":\"AND\"}";
+import java.util.regex.Matcher;
 
-    public VgsProvider(final String apiAuthorization) {
+/**
+ * Provider implementation for the Rhein-Main-Verkehrsverbund (Germany).
+ */
+public class RmvProvider extends AbstractHafasClientInterfaceProvider {
+    private static final HttpUrl API_BASE = HttpUrl.parse("https://www.rmv.de/auskunft/bin/jp/");
+    private static final Product[] PRODUCTS_MAP = { Product.HIGH_SPEED_TRAIN, Product.HIGH_SPEED_TRAIN,
+            Product.REGIONAL_TRAIN, Product.SUBURBAN_TRAIN, Product.SUBWAY, Product.TRAM, Product.BUS, Product.BUS,
+            Product.FERRY, Product.ON_DEMAND, Product.REGIONAL_TRAIN, Product.REGIONAL_TRAIN };
+    private static final String DEFAULT_API_CLIENT = "{\"id\":\"RMV\",\"type\":\"WEB\",\"name\":\"webapp\",\"l\":\"vs_webapp\"}";
+
+    public RmvProvider(final String apiAuthorization) {
         this(DEFAULT_API_CLIENT, apiAuthorization);
     }
 
-    public VgsProvider(final String apiClient, final String apiAuthorization) {
-        super(NetworkId.VGS, API_BASE, PRODUCTS_MAP);
-        setApiVersion("1.63");
+    public RmvProvider(final String apiClient, final String apiAuthorization) {
+        super(NetworkId.RMV, API_BASE, PRODUCTS_MAP);
+        setApiVersion("1.79");
         setApiClient(apiClient);
         setApiAuthorization(apiAuthorization);
     }
 
+    private static final String[] PLACES = { "Frankfurt (Main)", "Offenbach (Main)", "Mainz", "Wiesbaden", "Marburg",
+            "Kassel", "Hanau", "Göttingen", "Darmstadt", "Aschaffenburg", "Berlin", "Fulda" };
+
     @Override
     protected String[] splitStationName(final String name) {
-        final Matcher m = P_SPLIT_NAME_LAST_COMMA.matcher(name);
-        if (m.matches())
-            return new String[] { m.group(2), m.group(1) };
+        if (name.startsWith("F "))
+            return new String[] { "Frankfurt", name.substring(2) };
+        if (name.startsWith("OF "))
+            return new String[] { "Offenbach", name.substring(3) };
+        if (name.startsWith("MZ "))
+            return new String[] { "Mainz", name.substring(3) };
+
+        for (final String place : PLACES) {
+            if (name.startsWith(place + " - "))
+                return new String[] { place, name.substring(place.length() + 3) };
+            else if (name.startsWith(place + " ") || name.startsWith(place + "-"))
+                return new String[] { place, name.substring(place.length() + 1) };
+        }
 
         return super.splitStationName(name);
     }

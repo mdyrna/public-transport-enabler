@@ -17,19 +17,16 @@
 
 package de.schildbach.pte.dto;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static de.schildbach.pte.util.Preconditions.checkArgument;
+import static de.schildbach.pte.util.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
 
 /**
  * @author Andreas Schildbach
@@ -46,20 +43,22 @@ public final class Location implements Serializable {
 
     public Location(final LocationType type, final String id, final Point coord, final String place, final String name,
             final Set<Product> products) {
-        this.type = checkNotNull(type);
+        this.type = requireNonNull(type);
         this.id = id;
         this.coord = coord;
         this.place = place;
         this.name = name;
         this.products = products;
 
-        checkArgument(id == null || id.length() > 0, "ID cannot be the empty string");
-        checkArgument(place == null || name != null, "place '%s' without name cannot exist", place);
+        checkArgument(id == null || id.length() > 0, () ->
+                "ID cannot be the empty string");
+        checkArgument(place == null || name != null, () ->
+                "place '" + place + "' without name cannot exist");
         if (type == LocationType.ANY) {
-            checkArgument(id == null, "type ANY cannot have ID");
+            checkArgument(id == null, () -> "type ANY cannot have ID");
         } else if (type == LocationType.COORD) {
-            checkArgument(hasCoord(), "coordinates missing");
-            checkArgument(place == null && name == null, "coordinates cannot have place or name");
+            checkArgument(hasCoord(), () -> "coordinates missing");
+            checkArgument(place == null && name == null, () -> "coordinates cannot have place or name");
         }
     }
 
@@ -89,7 +88,7 @@ public final class Location implements Serializable {
     }
 
     public final boolean hasId() {
-        return !Strings.isNullOrEmpty(id);
+        return id != null && !id.isEmpty();
     }
 
     public final boolean hasCoord() {
@@ -97,18 +96,22 @@ public final class Location implements Serializable {
     }
 
     public double getLatAsDouble() {
+        checkState(hasCoord(), () -> "missing coordinates: " + this);
         return coord.getLatAsDouble();
     }
 
     public double getLonAsDouble() {
+        checkState(hasCoord(), () -> "missing coordinates: " + this);
         return coord.getLonAsDouble();
     }
 
     public int getLatAs1E6() {
+        checkState(hasCoord(), () -> "missing coordinates: " + this);
         return coord.getLatAs1E6();
     }
 
     public int getLonAs1E6() {
+        checkState(hasCoord(), () -> "missing coordinates: " + this);
         return coord.getLonAs1E6();
     }
 
@@ -154,17 +157,17 @@ public final class Location implements Serializable {
         if (!(o instanceof Location))
             return false;
         final Location other = (Location) o;
-        if (!Objects.equal(this.type, other.type))
+        if (!Objects.equals(this.type, other.type))
             return false;
         if (this.id != null)
-            return Objects.equal(this.id, other.id);
+            return Objects.equals(this.id, other.id);
         if (this.coord != null)
-            return Objects.equal(this.coord, other.coord);
+            return Objects.equals(this.coord, other.coord);
 
         // only discriminate by name/place if no ids are given
-        if (!Objects.equal(this.place, other.place))
+        if (!Objects.equals(this.place, other.place))
             return false;
-        if (!Objects.equal(this.name, other.name))
+        if (!Objects.equals(this.name, other.name))
             return false;
         return true;
     }
@@ -174,17 +177,17 @@ public final class Location implements Serializable {
             return true;
         if (other == null)
             return false;
-        if (!Objects.equal(this.type, other.type))
+        if (!Objects.equals(this.type, other.type))
             return false;
-        if (!Objects.equal(this.id, other.id))
+        if (!Objects.equals(this.id, other.id))
             return false;
-        if (!Objects.equal(this.coord, other.coord))
+        if (!Objects.equals(this.coord, other.coord))
             return false;
-        if (!Objects.equal(this.place, other.place))
+        if (!Objects.equals(this.place, other.place))
             return false;
-        if (!Objects.equal(this.name, other.name))
+        if (!Objects.equals(this.name, other.name))
             return false;
-        if (!Objects.equal(this.products, other.products))
+        if (!Objects.equals(this.products, other.products))
             return false;
         return true;
     }
@@ -192,16 +195,19 @@ public final class Location implements Serializable {
     @Override
     public int hashCode() {
         if (id != null)
-            return Objects.hashCode(type, id);
+            return Objects.hash(type, id);
         else
-            return Objects.hashCode(type, coord);
+            return Objects.hash(type, coord);
     }
 
     @Override
     public String toString() {
-        final ToStringHelper helper = MoreObjects.toStringHelper(this).addValue(type).addValue(id);
-        if (hasCoord())
-            helper.addValue(coord);
-        return helper.add("place", place).add("name", name).add("products", products).omitNullValues().toString();
+        return getClass().getSimpleName() + "{" +
+                type + "," +
+                (id != null ? id + "," : "") +
+                (hasCoord() ? coord + "," : "") +
+                (place != null ? "place=" + place + "," : "") +
+                (name != null ? "name=" + name + "," : "") +
+                "products=" + products + "}";
     }
 }

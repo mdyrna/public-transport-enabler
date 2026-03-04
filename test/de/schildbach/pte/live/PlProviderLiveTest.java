@@ -18,13 +18,12 @@
 package de.schildbach.pte.live;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
 import org.junit.Test;
 
-import de.schildbach.pte.TfiProvider;
+import de.schildbach.pte.PlProvider;
 import de.schildbach.pte.dto.Location;
 import de.schildbach.pte.dto.LocationType;
 import de.schildbach.pte.dto.NearbyLocationsResult;
@@ -35,26 +34,26 @@ import de.schildbach.pte.dto.SuggestLocationsResult;
 /**
  * @author Andreas Schildbach
  */
-public class TfiProviderLiveTest extends AbstractProviderLiveTest {
-    public TfiProviderLiveTest() {
-        super(new TfiProvider());
+public class PlProviderLiveTest extends AbstractProviderLiveTest {
+    public PlProviderLiveTest() {
+        super(new PlProvider(secretProperty("pl.api_authorization")));
     }
 
     @Test
     public void nearbyStations() throws Exception {
-        final NearbyLocationsResult result = queryNearbyStations(new Location(LocationType.STATION, "51013670"));
+        final NearbyLocationsResult result = queryNearbyStations(new Location(LocationType.STATION, "5100065"));
         print(result);
     }
 
     @Test
     public void nearbyStationsByCoordinate() throws Exception {
-        final NearbyLocationsResult result = queryNearbyStations(Location.coord(53348656, -6262221));
+        final NearbyLocationsResult result = queryNearbyStations(Location.coord(52227027, 20989795));
         print(result);
     }
 
     @Test
     public void queryDepartures() throws Exception {
-        final QueryDeparturesResult result = queryDepartures("51013670", false);
+        final QueryDeparturesResult result = queryDepartures("5100065", false);
         print(result);
     }
 
@@ -65,38 +64,23 @@ public class TfiProviderLiveTest extends AbstractProviderLiveTest {
     }
 
     @Test
-    public void suggestLocationsIncomplete() throws Exception {
-        final SuggestLocationsResult result = suggestLocations("Lower O'Connell Street");
+    public void suggestLocations() throws Exception {
+        final SuggestLocationsResult result = suggestLocations("Warszawa");
+        print(result);
+    }
+
+    @Test
+    public void suggestLocationsUmlaut() throws Exception {
+        final SuggestLocationsResult result = suggestLocations("Służewiec");
         print(result);
     }
 
     @Test
     public void shortTrip() throws Exception {
-        final QueryTripsResult result = queryTrips(
-                new Location(LocationType.STATION, "51013670", "Dublin City South",
-                        "O'Connell Bridge (on Lower O'Connell Street)"),
-                null, new Location(LocationType.STATION, "51005661", "Dublin City South", "Dublin (Baggot Street)"),
-                new Date(), true, null);
+        final QueryTripsResult result = queryTrips(new Location(LocationType.STATION, "5196001", null, "KRAKÓW"), null,
+                new Location(LocationType.STATION, "5196003", null, "WARSZAWA"), new Date(), true, null);
         print(result);
-        assertEquals(QueryTripsResult.Status.OK, result.status);
-        assertTrue(result.trips.size() > 0);
-
-        if (!result.context.canQueryLater())
-            return;
-
         final QueryTripsResult laterResult = queryMoreTrips(result.context, true);
         print(laterResult);
-
-        if (!laterResult.context.canQueryLater())
-            return;
-
-        final QueryTripsResult later2Result = queryMoreTrips(laterResult.context, true);
-        print(later2Result);
-
-        if (!later2Result.context.canQueryEarlier())
-            return;
-
-        final QueryTripsResult earlierResult = queryMoreTrips(later2Result.context, false);
-        print(earlierResult);
     }
 }

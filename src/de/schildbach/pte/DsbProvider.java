@@ -43,8 +43,8 @@ public class DsbProvider extends AbstractHafasClientInterfaceProvider {
     public DsbProvider(final String apiClient, final String apiAuthorization) {
         super(NetworkId.DSB, API_BASE, PRODUCTS_MAP);
         setApiEndpoint("iphone.exe");
-        setApiVersion("1.15");
-        setApiExt("DK.9");
+        setApiVersion("1.62");
+        setApiExt("DK.11");
         setApiClient(apiClient);
         setApiAuthorization(apiAuthorization);
     }

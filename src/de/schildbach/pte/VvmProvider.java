@@ -17,7 +17,6 @@
 
 package de.schildbach.pte;
 
-import com.google.common.base.Strings;
 import de.schildbach.pte.dto.Location;
 import de.schildbach.pte.dto.LocationType;
 import de.schildbach.pte.dto.NearbyLocationsResult;
@@ -30,10 +29,11 @@ import okhttp3.HttpUrl;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  * @author Andreas Schildbach
@@ -46,7 +46,7 @@ public class VvmProvider extends AbstractEfaProvider {
 
     public VvmProvider() {
         super(NetworkId.VVM, API_BASE, DEPARTURE_MONITOR_ENDPOINT, TRIP_ENDPOINT, null, null);
-
+        setRequestUrlEncoding(StandardCharsets.UTF_8);
         setNeedsSpEncId(true);
     }
 
@@ -65,7 +65,7 @@ public class VvmProvider extends AbstractEfaProvider {
     @Override
     public QueryDeparturesResult queryDepartures(final String stationId, final @Nullable Date time,
                                                  final int maxDepartures, final boolean equivs) throws IOException {
-        checkNotNull(Strings.emptyToNull(stationId));
+        requireNonNull(stationId);
 
         return queryDeparturesMobile(stationId, time, maxDepartures, equivs);
     }

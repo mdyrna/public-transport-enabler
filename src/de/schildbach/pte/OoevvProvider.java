@@ -31,7 +31,7 @@ import okhttp3.HttpUrl;
  * @author Andreas Schildbach
  */
 public class OoevvProvider extends AbstractHafasClientInterfaceProvider {
-    private static final HttpUrl API_BASE = HttpUrl.parse("https://verkehrsauskunft.ooevv.at/bin/");
+    private static final HttpUrl API_BASE = HttpUrl.parse("https://verkehrsauskunft.ooevv.at/hamm/");
     private static final Product[] PRODUCTS_MAP = { Product.HIGH_SPEED_TRAIN, Product.SUBURBAN_TRAIN, Product.SUBWAY,
             null, Product.TRAM, Product.REGIONAL_TRAIN, Product.BUS, Product.BUS, Product.TRAM, Product.FERRY,
             Product.ON_DEMAND, Product.BUS, Product.REGIONAL_TRAIN, null, null, null };
@@ -43,8 +43,9 @@ public class OoevvProvider extends AbstractHafasClientInterfaceProvider {
 
     public OoevvProvider(final String apiClient, final String apiAuthorization) {
         super(NetworkId.OOEVV, API_BASE, PRODUCTS_MAP);
-        setApiVersion("1.18");
-        setApiExt("VAO.6");
+        setApiEndpoint("gate");
+        setApiVersion("1.59");
+        setApiExt("VAO.22");
         setApiClient(apiClient);
         setApiAuthorization(apiAuthorization);
     }

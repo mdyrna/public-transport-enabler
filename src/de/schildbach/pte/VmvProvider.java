@@ -17,11 +17,10 @@
 
 package de.schildbach.pte;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 import javax.annotation.Nullable;
-
-import com.google.common.base.Charsets;
 
 import de.schildbach.pte.dto.Location;
 import de.schildbach.pte.dto.TripOptions;
@@ -32,13 +31,13 @@ import okhttp3.HttpUrl;
  * @author Andreas Schildbach
  */
 public class VmvProvider extends AbstractEfaProvider {
-    private static final HttpUrl API_BASE = HttpUrl.parse("https://fahrplanauskunft-mv.de/vmv3/");
+    private static final HttpUrl API_BASE = HttpUrl.parse("https://fahrplanauskunft-mv.de/vmv-efa/");
 
     public VmvProvider() {
         super(NetworkId.VMV, API_BASE);
         setIncludeRegionId(false);
         setUseRouteIndexAsTripId(false);
-        setRequestUrlEncoding(Charsets.UTF_8);
+        setRequestUrlEncoding(StandardCharsets.UTF_8);
         setSessionCookieName("EFABWLB");
         httpClient.setTrustAllCertificates(true);
     }

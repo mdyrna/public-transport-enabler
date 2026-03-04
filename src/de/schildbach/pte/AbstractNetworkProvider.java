@@ -20,18 +20,17 @@ package de.schildbach.pte;
 import java.io.IOException;
 import java.net.Proxy;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
 
 import de.schildbach.pte.dto.Location;
 import de.schildbach.pte.dto.Point;
@@ -50,7 +49,7 @@ public abstract class AbstractNetworkProvider implements NetworkProvider {
     protected final NetworkId network;
     protected final HttpClient httpClient = new HttpClient();
 
-    protected Charset requestUrlEncoding = Charsets.ISO_8859_1;
+    protected Charset requestUrlEncoding = StandardCharsets.ISO_8859_1;
     protected TimeZone timeZone = TimeZone.getTimeZone("CET");
     protected int numTripsRequested = 6;
     private @Nullable Map<String, Style> styles = null;
@@ -151,7 +150,7 @@ public abstract class AbstractNetworkProvider implements NetworkProvider {
         if (styles != null && product != null) {
             if (network != null) {
                 // check for line match
-                final Style lineStyle = styles.get(network + STYLES_SEP + product.code + Strings.nullToEmpty(label));
+                final Style lineStyle = styles.get(network + STYLES_SEP + product.code + Objects.toString(label, ""));
                 if (lineStyle != null)
                     return lineStyle;
 
@@ -169,7 +168,7 @@ public abstract class AbstractNetworkProvider implements NetworkProvider {
             }
 
             // check for line match
-            final String string = product.code + Strings.nullToEmpty(label);
+            final String string = product.code + Objects.toString(label, "");
             final Style lineStyle = styles.get(string);
             if (lineStyle != null)
                 return lineStyle;

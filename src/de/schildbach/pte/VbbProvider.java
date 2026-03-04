@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import de.schildbach.pte.dto.Fare;
 import de.schildbach.pte.dto.Product;
 
 import okhttp3.HttpUrl;
@@ -32,24 +33,24 @@ import okhttp3.HttpUrl;
  * @author Andreas Schildbach
  */
 public class VbbProvider extends AbstractHafasClientInterfaceProvider {
-    private static final HttpUrl API_BASE = HttpUrl.parse("https://fahrinfo.vbb.de/bin/");
+    private static final HttpUrl API_BASE = HttpUrl.parse("https://fahrinfo.vbb.de/");
     private static final Product[] PRODUCTS_MAP = { Product.SUBURBAN_TRAIN, Product.SUBWAY, Product.TRAM, Product.BUS,
             Product.FERRY, Product.HIGH_SPEED_TRAIN, Product.REGIONAL_TRAIN, null, null, Product.BUS /* BEV */ };
     private static final Set<Product> ALL_EXCEPT_HIGHSPEED_AND_ONDEMAND = EnumSet
             .complementOf(EnumSet.of(Product.HIGH_SPEED_TRAIN, Product.ON_DEMAND));
     private static final String DEFAULT_API_CLIENT = "{\"id\":\"VBB\",\"type\":\"AND\"}";
 
-    public VbbProvider(final String apiAuthorization, final byte[] salt) {
-        this(DEFAULT_API_CLIENT, apiAuthorization, salt);
+    public VbbProvider(final String apiAuthorization) {
+        this(DEFAULT_API_CLIENT, apiAuthorization);
     }
 
-    public VbbProvider(final String apiClient, final String apiAuthorization, final byte[] salt) {
+    public VbbProvider(final String apiClient, final String apiAuthorization) {
         super(NetworkId.VBB, API_BASE, PRODUCTS_MAP);
-        setApiVersion("1.18");
+        setApiEndpoint("gate");
+        setApiVersion("1.77");
         setApiExt("VBB.4");
         setApiClient(apiClient);
         setApiAuthorization(apiAuthorization);
-        setRequestMicMacSalt(salt);
     }
 
     private static final Pattern P_SPLIT_NAME_SU = Pattern.compile("(.*?)(?:\\s+\\((S|U|S\\+U)\\))?");
@@ -98,13 +99,24 @@ public class VbbProvider extends AbstractHafasClientInterfaceProvider {
     protected String[] splitAddress(final String address) {
         final Matcher m = P_SPLIT_NAME_FIRST_COMMA.matcher(address);
         if (m.matches())
-            return new String[] { m.group(1), m.group(2) };
+            return new String[] { m.group(2), m.group(1) };
         return super.splitStationName(address);
     }
 
     @Override
-    protected String normalizeFareName(final String fareName) {
-        return fareName.replaceAll("Tarifgebiet ", "");
+    protected String normalizeFareName(String name) {
+        name = name.replaceAll("Tarifgebiet ", "");
+        name = name.replaceAll("Einzelfahrausweis", "Einzel");
+        name = name.replaceAll("24-Stunden-Karte", "24 Stunden");
+        return name;
+    }
+
+    @Override
+    protected boolean hideFare(final Fare fare) {
+        final String name = fare.name;
+        if (name.contains("Zeitkarte"))
+            return true;
+        return super.hideFare(fare);
     }
 
     @Override

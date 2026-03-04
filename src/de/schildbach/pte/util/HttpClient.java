@@ -17,10 +17,7 @@
 
 package de.schildbach.pte.util;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.ByteArrayInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
@@ -31,9 +28,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.net.ssl.KeyManager;
@@ -45,9 +45,6 @@ import javax.net.ssl.X509TrustManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Throwables;
-import com.google.common.primitives.Ints;
 
 import de.schildbach.pte.exception.BlockedException;
 import de.schildbach.pte.exception.InternalErrorException;
@@ -70,6 +67,8 @@ import okhttp3.Response.Builder;
 import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * @author Andreas Schildbach
  */
@@ -89,14 +88,20 @@ public final class HttpClient {
     @Nullable
     private CertificatePinner certificatePinner = null;
 
-    private static final List<Integer> RESPONSE_CODES_BLOCKED = Ints.asList(HttpURLConnection.HTTP_BAD_REQUEST,
-            HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_FORBIDDEN,
-            HttpURLConnection.HTTP_NOT_ACCEPTABLE, HttpURLConnection.HTTP_UNAVAILABLE);
-    private static final List<Integer> RESPONSE_CODES_NOT_FOUND = Ints.asList(HttpURLConnection.HTTP_NOT_FOUND);
-    private static final List<Integer> RESPONSE_CODES_REDIRECT = Ints.asList(HttpURLConnection.HTTP_MOVED_PERM,
-            HttpURLConnection.HTTP_MOVED_TEMP, 307, 308);
-    private static final List<Integer> RESPONSE_CODES_INTERNAL_ERROR = Ints
-            .asList(HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_BAD_GATEWAY);
+    private static final Set<Integer> RESPONSE_CODES_BLOCKED =
+            Stream.of(HttpURLConnection.HTTP_BAD_REQUEST, HttpURLConnection.HTTP_UNAUTHORIZED,
+                            HttpURLConnection.HTTP_FORBIDDEN, HttpURLConnection.HTTP_NOT_ACCEPTABLE,
+                            HttpURLConnection.HTTP_UNAVAILABLE)
+                    .collect(Collectors.toSet());
+    private static final Set<Integer> RESPONSE_CODES_NOT_FOUND =
+            Stream.of(HttpURLConnection.HTTP_NOT_FOUND)
+                    .collect(Collectors.toSet());
+    private static final Set<Integer> RESPONSE_CODES_REDIRECT =
+            Stream.of(HttpURLConnection.HTTP_MOVED_PERM, HttpURLConnection.HTTP_MOVED_TEMP, 307, 308)
+                    .collect(Collectors.toSet());
+    private static final Set<Integer> RESPONSE_CODES_INTERNAL_ERROR =
+            Stream.of(HttpURLConnection.HTTP_INTERNAL_ERROR, HttpURLConnection.HTTP_BAD_GATEWAY)
+                    .collect(Collectors.toSet());
 
     private static final OkHttpClient OKHTTP_CLIENT;
     static {
@@ -146,8 +151,6 @@ public final class HttpClient {
                 try {
                     response = chain.proceed(request);
                 } catch (final IOException x) {
-                    if (Throwables.getRootCause(x) instanceof EOFException)
-                        return chain.proceed(request); // retry
                     throw x;
                 }
                 if (response.isSuccessful() && response.peekBody(1).bytes().length == 0) {
@@ -175,6 +178,10 @@ public final class HttpClient {
     private static final int SCRAPE_PEEK_SIZE = 8192;
 
     private static final Logger log = LoggerFactory.getLogger(HttpClient.class);
+
+    public HttpClient() {
+        setHeader("Accept", SCRAPE_ACCEPT);
+    }
 
     public void setUserAgent(final String userAgent) {
         this.userAgent = userAgent;
@@ -230,15 +237,16 @@ public final class HttpClient {
 
     public void getInputStream(final Callback callback, final HttpUrl url, final String postRequest,
             final String requestContentType, final String referer) throws IOException {
-        checkNotNull(callback);
-        checkNotNull(url);
+        requireNonNull(callback);
+        requireNonNull(url);
 
         final Request.Builder request = new Request.Builder();
         request.url(url);
         request.headers(Headers.of(headers));
-        if (postRequest != null)
-            request.post(RequestBody.create(MediaType.parse(requestContentType), postRequest));
-        request.header("Accept", SCRAPE_ACCEPT);
+        if (postRequest != null) {
+            final MediaType m = requestContentType != null ? MediaType.parse(requestContentType) : null;
+            request.post(RequestBody.create(m, postRequest));
+        }
         if (userAgent != null)
             request.header("User-Agent", userAgent);
         if (referer != null)

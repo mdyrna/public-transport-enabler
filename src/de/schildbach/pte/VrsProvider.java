@@ -17,7 +17,7 @@
 
 package de.schildbach.pte;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -44,7 +44,6 @@ import de.schildbach.pte.util.ParserUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import com.google.common.base.Strings;
 
 import de.schildbach.pte.dto.Departure;
 import de.schildbach.pte.dto.Fare;
@@ -100,12 +99,12 @@ public class VrsProvider extends AbstractNetworkProvider {
 
         @Override
         public boolean canQueryLater() {
-            return this.canQueryLater;
+            return this.canQueryLater && this.lastDeparture != null;
         }
 
         @Override
         public boolean canQueryEarlier() {
-            return this.canQueryEarlier;
+            return this.canQueryEarlier && this.firstArrival != null;
         }
 
         public void departure(Date departure) {
@@ -413,7 +412,7 @@ public class VrsProvider extends AbstractNetworkProvider {
     @Override
     public QueryDeparturesResult queryDepartures(final String stationId, @Nullable Date time, int maxDepartures,
             boolean equivs) throws IOException {
-        checkNotNull(Strings.emptyToNull(stationId));
+        requireNonNull(stationId);
 
         // g=p means group by product; not used here
         // d=minutes overwrites c=count and returns departures for the next d minutes
@@ -429,7 +428,7 @@ public class VrsProvider extends AbstractNetworkProvider {
 
         try {
             final JSONObject head = new JSONObject(page.toString());
-            final String error = Strings.emptyToNull(head.optString("error", "").trim());
+            final String error = head.optString("error", null);
             if (error != null) {
                 if (error.contains("lieferte leere Antwort."))
                     return new QueryDeparturesResult(new ResultHeader(NetworkId.VRS, SERVER_PRODUCT),
@@ -486,7 +485,7 @@ public class VrsProvider extends AbstractNetworkProvider {
                             position = new Position(postName);
                         }
                     }
-                    final Location destination = new Location(LocationType.STATION, null /* id */, null /* place */,
+                    final Location destination = new Location(LocationType.ANY, null /* id */, null /* place */,
                             lineObj.getString("direction"));
 
                     final LineDestination lineDestination = new LineDestination(line, destination);
@@ -531,7 +530,7 @@ public class VrsProvider extends AbstractNetworkProvider {
             final List<SuggestedLocation> locations = new ArrayList<>();
 
             final JSONObject head = new JSONObject(page.toString());
-            final String error = Strings.emptyToNull(head.optString("error", "").trim());
+            final String error = head.optString("error", null);
             if (error != null) {
                 if (error.contains("lieferte leere Antwort."))
                     return new SuggestLocationsResult(new ResultHeader(NetworkId.VRS, SERVER_PRODUCT),
@@ -643,7 +642,7 @@ public class VrsProvider extends AbstractNetworkProvider {
         try {
             final List<Trip> trips = new ArrayList<>();
             final JSONObject head = new JSONObject(page.toString());
-            final String error = Strings.emptyToNull(head.optString("error", "").trim());
+            final String error = head.optString("error", null);
             if (error != null) {
                 if (error.contains("lieferte leere Antwort."))
                     return new QueryTripsResult(new ResultHeader(NetworkId.VRS, SERVER_PRODUCT),
@@ -817,12 +816,12 @@ public class VrsProvider extends AbstractNetworkProvider {
                                 segmentDestination, arrivalPlanned, points, (int) distance));
                     } else if (type.equals("publicTransport")) {
                         legs.add(new Trip.Public(line, direction != null
-                                ? new Location(LocationType.STATION, null /* id */, null /* place */, direction) : null,
+                                ? new Location(LocationType.ANY, null /* id */, null /* place */, direction) : null,
                                 new Stop(segmentOrigin, true /* departure */, departurePlanned, departurePredicted,
                                         segmentOriginPosition, segmentOriginPosition),
                                 new Stop(segmentDestination, false /* departure */, arrivalPlanned, arrivalPredicted,
                                         segmentDestinationPosition, segmentDestinationPosition),
-                                intermediateStops, points, Strings.emptyToNull(message.toString())));
+                                intermediateStops, points, message.length() > 0 ? message.toString() : null));
                     } else {
                         throw new IllegalStateException("unhandled type: " + type);
                     }
@@ -833,7 +832,8 @@ public class VrsProvider extends AbstractNetworkProvider {
                 trips.add(new Trip(null /* id */, tripOrigin, tripDestination, legs, fares, null /* capacity */,
                         changes));
             }
-            long serverTime = parseDateTime(head.getString("generated")).getTime();
+            String generatedStr = head.getString("generated");
+            long serverTime = !generatedStr.isEmpty() ? parseDateTime(generatedStr).getTime() : null;
             final ResultHeader header = new ResultHeader(NetworkId.VRS, SERVER_PRODUCT, null, null, serverTime, null);
             context.from = from;
             context.to = to;
@@ -1083,8 +1083,11 @@ public class VrsProvider extends AbstractNetworkProvider {
     }
 
     private final static Date parseDateTime(final String dateTimeStr) throws ParseException {
+        final int lastColonIndex = dateTimeStr.lastIndexOf(':');
+        if (lastColonIndex < 0)
+            throw new ParseException(dateTimeStr, lastColonIndex);
         return new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ssZ")
-                .parse(dateTimeStr.substring(0, dateTimeStr.lastIndexOf(':')) + "00");
+                .parse(dateTimeStr.substring(0, lastColonIndex) + "00");
     }
 
     private final Point stationToCoord(String id) throws IOException {
@@ -1096,7 +1099,7 @@ public class VrsProvider extends AbstractNetworkProvider {
 
         try {
             final JSONObject head = new JSONObject(page.toString());
-            final String error = Strings.emptyToNull(head.optString("error", "").trim());
+            final String error = head.optString("error", null);
             if (error != null) {
                 throw new IllegalStateException(error);
             }
